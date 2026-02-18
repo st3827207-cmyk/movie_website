@@ -1,0 +1,18 @@
+# Secret keys — never upload these
+.env
+
+# Python virtual environment — don't need this on GitHub
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Database files
+*.db
+*.sqlite3
+
+# VS Code settings
+.vscode/
+
+# Mac files
+.DS_Store

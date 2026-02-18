@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ movie.title }} — MovieFinder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <!-- ═══════════════ NAVBAR ═══════════════ -->
+  <nav class="navbar">
+    <a href="/" class="nav-logo">🎬 MovieFinder</a>
+
+    <form action="/search" method="GET" class="nav-search">
+      <input type="text" name="q" placeholder="Search with Claude AI..." autocomplete="off">
+      <button type="submit">Search</button>
+    </form>
+
+    <div class="nav-links">
+      <a href="/">Trending</a>
+      <a href="/top-rated">Top Rated</a>
+      <a href="/now-playing">Now Playing</a>
+      <a href="/upcoming">Upcoming</a>
+      <a href="/watchlist" class="watchlist-link">
+        ⭐ Watchlist
+        {% if watchlist_ids %}
+          <span class="wl-count">{{ watchlist_ids|length }}</span>
+        {% endif %}
+      </a>
+    </div>
+  </nav>
+
+  <!-- ═══════════════ BACKDROP IMAGE ═══════════════ -->
+  {% if movie.backdrop_path %}
+  <div class="detail-backdrop" style="background-image: url('https://image.tmdb.org/t/p/original{{ movie.backdrop_path }}')">
+    <div class="detail-backdrop-overlay"></div>
+  </div>
+  {% else %}
+  <div class="detail-backdrop-placeholder"></div>
+  {% endif %}
+
+  <!-- ═══════════════ MOVIE DETAIL MAIN ═══════════════ -->
+  <div class="detail-wrapper">
+
+    <!-- LEFT: POSTER -->
+    <div class="detail-poster-col">
+      {% if movie.poster_path %}
+        <img class="detail-poster-img" src="https://image.tmdb.org/t/p/w400{{ movie.poster_path }}" alt="{{ movie.title }}">
+      {% else %}
+        <div class="card-no-poster large">🎬</div>
+      {% endif %}
+
+      <!-- Watchlist Button -->
+      <a href="/watchlist/{% if in_watchlist %}remove{% else %}add{% endif %}/{{ movie.id }}"
+         class="watchlist-toggle-btn {% if in_watchlist %}wl-remove{% endif %}">
+        {% if in_watchlist %}
+          ✓ Remove from Watchlist
+        {% else %}
+          + Add to Watchlist
+        {% endif %}
+      </a>
+
+      <!-- Score Circle -->
+      <div class="score-box">
+        <div class="score-circle">
+          <span class="score-num">{{ movie.vote_average | round(1) }}</span>
+          <span class="score-label">/ 10</span>
+        </div>
+        <p class="score-votes">{{ '{:,}'.format(movie.vote_count) }} votes</p>
+      </div>
+    </div>
+
+    <!-- RIGHT: INFO -->
+    <div class="detail-info-col">
+
+      <!-- Back link -->
+      <a href="javascript:history.back()" class="back-link">← Back</a>
+
+      <!-- Title -->
+      <h1 class="detail-movie-title">{{ movie.title }}</h1>
+
+      {% if movie.tagline %}
+        <p class="detail-tagline">"{{ movie.tagline }}"</p>
+      {% endif %}
+
+      <!-- Badges -->
+      <div class="detail-badges">
+        <span class="badge badge-gold">⭐ {{ movie.vote_average | round(1) }}</span>
+        {% if movie.release_date %}
+          <span class="badge badge-grey">📅 {{ movie.release_date }}</span>
+        {% endif %}
+        {% if movie.runtime %}
+          <span class="badge badge-grey">⏱ {{ movie.runtime }} min</span>
+        {% endif %}
+        {% if movie.status %}
+          <span class="badge badge-grey">{{ movie.status }}</span>
+        {% endif %}
+        {% if movie.original_language %}
+          <span class="badge badge-grey">🌐 {{ movie.original_language | upper }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Genres -->
+      {% if movie.genres %}
+      <div class="detail-genres">
+        {% for g in movie.genres %}
+          <a href="/genre/{{ g.name }}" class="genre-tag">{{ g.name }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Overview -->
+      <div class="detail-section">
+        <h3 class="detail-section-label">Overview</h3>
+        <p class="detail-overview">{{ movie.overview or 'No overview available.' }}</p>
+      </div>
+
+      <!-- Stats -->
+      {% if movie.budget or movie.revenue %}
+      <div class="detail-section">
+        <h3 class="detail-section-label">Box Office</h3>
+        <div class="detail-stats">
+          {% if movie.budget and movie.budget > 0 %}
+          <div class="stat-item">
+            <span class="stat-label">Budget</span>
+            <span class="stat-value">${{ '{:,}'.format(movie.budget) }}</span>
+          </div>
+          {% endif %}
+          {% if movie.revenue and movie.revenue > 0 %}
+          <div class="stat-item">
+            <span class="stat-label">Revenue</span>
+            <span class="stat-value">${{ '{:,}'.format(movie.revenue) }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Cast -->
+      {% if cast %}
+      <div class="detail-section">
+        <h3 class="detail-section-label">Top Cast</h3>
+        <div class="cast-list">
+          {% for person in cast %}
+          <div class="cast-card">
+            {% if person.profile_path %}
+              <img class="cast-photo" src="https://image.tmdb.org/t/p/w185{{ person.profile_path }}" alt="{{ person.name }}">
+            {% else %}
+              <div class="cast-no-photo">👤</div>
+            {% endif %}
+            <p class="cast-name">{{ person.name }}</p>
+            <p class="cast-char">{{ person.character }}</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ TRAILER ═══════════════ -->
+  {% if trailer %}
+  <div class="trailer-section">
+    <div class="trailer-inner">
+      <h2 class="trailer-heading">🎬 Official Trailer</h2>
+      <div class="trailer-frame">
+        <iframe
+          src="https://www.youtube.com/embed/{{ trailer.key }}?rel=0"
+          title="{{ movie.title }} Trailer"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ═══════════════ SIMILAR MOVIES ═══════════════ -->
+  {% if similar %}
+  <div class="similar-section">
+    <div class="section-header">
+      <h2 class="section-title">Similar Movies You May Like</h2>
+    </div>
+    <div class="similar-grid">
+      {% for m in similar %}
+      <a href="/movie/{{ m.id }}" class="similar-card">
+        {% if m.poster_path %}
+          <img src="https://image.tmdb.org/t/p/w200{{ m.poster_path }}" alt="{{ m.title }}" loading="lazy">
+        {% else %}
+          <div class="card-no-poster small">🎬</div>
+        {% endif %}
+        <div class="similar-info">
+          <p class="similar-title">{{ m.title }}</p>
+          <p class="similar-rating">⭐ {{ m.vote_average | round(1) }}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">🎬 MovieFinder</div>
+      <p class="footer-text">Powered by <strong>Claude AI</strong> + TMDB API</p>
+      <div class="footer-links">
+        <a href="/">Trending</a>
+        <a href="/top-rated">Top Rated</a>
+        <a href="/now-playing">Now Playing</a>
+        <a href="/upcoming">Upcoming</a>
+        <a href="/watchlist">My Watchlist</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

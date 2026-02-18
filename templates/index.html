@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page_title or 'MovieFinder' }} — MovieFinder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <!-- ═══════════════ NAVBAR ═══════════════ -->
+  <nav class="navbar">
+    <a href="/" class="nav-logo">🎬 MovieFinder</a>
+
+    <form action="/search" method="GET" class="nav-search">
+      <input type="text" name="q" placeholder="Search with Claude AI..." value="{{ query or '' }}" autocomplete="off">
+      <button type="submit">Search</button>
+    </form>
+
+    <div class="nav-links">
+      <a href="/" class="{% if page_title == 'Trending This Week' %}active{% endif %}">Trending</a>
+      <a href="/top-rated" class="{% if page_title == 'Top Rated Movies' %}active{% endif %}">Top Rated</a>
+      <a href="/now-playing" class="{% if page_title == 'Now Playing' %}active{% endif %}">Now Playing</a>
+      <a href="/upcoming" class="{% if page_title == 'Upcoming Movies' %}active{% endif %}">Upcoming</a>
+      <a href="/watchlist" class="watchlist-link">
+        ⭐ Watchlist
+        {% if watchlist_ids %}
+          <span class="wl-count">{{ watchlist_ids|length }}</span>
+        {% endif %}
+      </a>
+    </div>
+  </nav>
+
+  <!-- ═══════════════ HERO BANNER ═══════════════ -->
+  {% if featured %}
+  <section class="hero" style="background-image: url('https://image.tmdb.org/t/p/original{{ featured.backdrop_path }}')">
+    <div class="hero-overlay">
+      <div class="hero-content">
+        <p class="hero-tag">🔥 Trending This Week</p>
+        <h1 class="hero-title">{{ featured.title }}</h1>
+        <p class="hero-desc">
+          {% if featured.overview %}
+            {{ featured.overview[:180] }}...
+          {% endif %}
+        </p>
+        <div class="hero-meta">
+          <span class="hero-rating">⭐ {{ featured.vote_average | round(1) }}</span>
+          <span class="hero-year">
+            {% if featured.release_date %}📅 {{ featured.release_date[:4] }}{% endif %}
+          </span>
+        </div>
+        <div class="hero-actions">
+          <a href="/movie/{{ featured.id }}" class="btn-primary">▶ View Details</a>
+          <a href="/watchlist/add/{{ featured.id }}" class="btn-secondary">+ Watchlist</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ═══════════════ GENRE BAR ═══════════════ -->
+  <div class="genre-bar">
+    <a href="/" class="genre-pill {% if not genre and not query %}active{% endif %}">All</a>
+    {% for name in ['Action','Comedy','Horror','Romance','Sci-Fi','Animation','Thriller','Drama','Fantasy','Crime'] %}
+      <a href="/genre/{{ name }}" class="genre-pill {% if genre == name %}active{% endif %}">{{ name }}</a>
+    {% endfor %}
+  </div>
+
+  <!-- ═══════════════ AI SEARCH RESULT BAR ═══════════════ -->
+  {% if refined %}
+  <div class="ai-bar">
+    <span class="ai-icon">🤖</span>
+    <div>
+      <span>Claude AI understood your search <strong>"{{ query }}"</strong></span>
+      <span class="ai-sep">→</span>
+      <span>Searched TMDB for: <strong class="ai-refined">{{ refined }}</strong></span>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ═══════════════ SECTION HEADER ═══════════════ -->
+  <div class="section-header">
+    <h2 class="section-title">{{ page_title or 'Trending This Week' }}</h2>
+    <span class="movie-count">{{ movies|length }} movies</span>
+  </div>
+
+  <!-- ═══════════════ MOVIE GRID ═══════════════ -->
+  <main class="movie-grid">
+    {% if movies %}
+      {% for movie in movies %}
+      <div class="movie-card">
+        <a href="/movie/{{ movie.id }}" class="card-link">
+          {% if movie.poster_path %}
+            <img
+              class="card-poster"
+              src="https://image.tmdb.org/t/p/w300{{ movie.poster_path }}"
+              alt="{{ movie.title }}"
+              loading="lazy"
+            >
+          {% else %}
+            <div class="card-no-poster">🎬<br><span>No Image</span></div>
+          {% endif %}
+
+          <div class="card-hover-info">
+            <p class="card-hover-desc">
+              {% if movie.overview %}
+                {{ movie.overview[:100] }}...
+              {% endif %}
+            </p>
+            <span class="card-hover-btn">View Details →</span>
+          </div>
+        </a>
+
+        <div class="card-info">
+          <div class="card-rating-badge">⭐ {{ movie.vote_average | round(1) }}</div>
+          <h3 class="card-title">{{ movie.title }}</h3>
+          <div class="card-meta">
+            <span class="card-year">
+              {% if movie.release_date and movie.release_date|length >= 4 %}
+                {{ movie.release_date[:4] }}
+              {% else %}
+                N/A
+              {% endif %}
+            </span>
+            <a href="/watchlist/{% if movie.id in watchlist_ids %}remove{% else %}add{% endif %}/{{ movie.id }}"
+               class="card-wl-btn {% if movie.id in watchlist_ids %}wl-added{% endif %}">
+              {% if movie.id in watchlist_ids %}✓ Saved{% else %}+ Save{% endif %}
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">🎬</div>
+        <h3>No movies found</h3>
+        <p>Try searching for something else!</p>
+        <a href="/" class="btn-primary">Go Home</a>
+      </div>
+    {% endif %}
+  </main>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">🎬 MovieFinder</div>
+      <p class="footer-text">Powered by <strong>Claude AI</strong> + TMDB API</p>
+      <div class="footer-links">
+        <a href="/">Trending</a>
+        <a href="/top-rated">Top Rated</a>
+        <a href="/now-playing">Now Playing</a>
+        <a href="/upcoming">Upcoming</a>
+        <a href="/watchlist">My Watchlist</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

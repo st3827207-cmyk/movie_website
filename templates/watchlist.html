@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Watchlist — MovieFinder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <!-- ═══════════════ NAVBAR ═══════════════ -->
+  <nav class="navbar">
+    <a href="/" class="nav-logo">🎬 MovieFinder</a>
+
+    <form action="/search" method="GET" class="nav-search">
+      <input type="text" name="q" placeholder="Search with Claude AI..." autocomplete="off">
+      <button type="submit">Search</button>
+    </form>
+
+    <div class="nav-links">
+      <a href="/">Trending</a>
+      <a href="/top-rated">Top Rated</a>
+      <a href="/now-playing">Now Playing</a>
+      <a href="/upcoming">Upcoming</a>
+      <a href="/watchlist" class="watchlist-link active">
+        ⭐ Watchlist
+        {% if watchlist_ids %}
+          <span class="wl-count">{{ watchlist_ids|length }}</span>
+        {% endif %}
+      </a>
+    </div>
+  </nav>
+
+  <!-- ═══════════════ PAGE HEADER ═══════════════ -->
+  <div class="page-hero">
+    <div class="page-hero-inner">
+      <h1 class="page-hero-title">⭐ My Watchlist</h1>
+      <p class="page-hero-sub">
+        {% if movies %}
+          {{ movies|length }} movie{% if movies|length != 1 %}s{% endif %} saved
+        {% else %}
+          No movies saved yet
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ WATCHLIST GRID ═══════════════ -->
+  <main style="padding: 0 32px 60px;">
+    {% if movies %}
+      <div class="movie-grid">
+        {% for movie in movies %}
+        <div class="movie-card">
+          <a href="/movie/{{ movie.id }}" class="card-link">
+            {% if movie.poster_path %}
+              <img class="card-poster" src="https://image.tmdb.org/t/p/w300{{ movie.poster_path }}" alt="{{ movie.title }}" loading="lazy">
+            {% else %}
+              <div class="card-no-poster">🎬<br><span>No Image</span></div>
+            {% endif %}
+          </a>
+          <div class="card-info">
+            <div class="card-rating-badge">⭐ {{ movie.vote_average | round(1) }}</div>
+            <h3 class="card-title">{{ movie.title }}</h3>
+            <div class="card-meta">
+              <span class="card-year">
+                {% if movie.release_date and movie.release_date|length >= 4 %}
+                  {{ movie.release_date[:4] }}
+                {% endif %}
+              </span>
+              <a href="/watchlist/remove/{{ movie.id }}" class="card-wl-btn wl-added">✕ Remove</a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">⭐</div>
+        <h3>Your watchlist is empty</h3>
+        <p>Browse movies and click "+ Save" to add them here</p>
+        <a href="/" class="btn-primary">Browse Movies</a>
+      </div>
+    {% endif %}
+  </main>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">🎬 MovieFinder</div>
+      <p class="footer-text">Powered by <strong>Claude AI</strong> + TMDB API</p>
+      <div class="footer-links">
+        <a href="/">Trending</a>
+        <a href="/top-rated">Top Rated</a>
+        <a href="/now-playing">Now Playing</a>
+        <a href="/upcoming">Upcoming</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
