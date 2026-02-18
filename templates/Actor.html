@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - MovieProfix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a0f; color: #fff; font-family: 'Segoe UI', sans-serif; }
+        .navbar { background: linear-gradient(135deg,#1a1a2e,#16213e); padding: 0 40px; display: flex; align-items: center; justify-content: space-between; height: 65px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #e50914; }
+        .logo { font-size: 1.6rem; font-weight: 800; color: #e50914; text-decoration: none; }
+        .nav-links { display: flex; gap: 5px; }
+        .nav-links a { color: #ccc; text-decoration: none; padding: 8px 14px; border-radius: 6px; font-size: 0.9rem; }
+        .nav-links a:hover { color: #fff; background: rgba(229,9,20,0.2); }
+        .search-form { display: flex; align-items: center; background: rgba(255,255,255,0.08); border-radius: 25px; padding: 6px 16px; border: 1px solid rgba(255,255,255,0.1); }
+        .search-form input { background: none; border: none; color: #fff; outline: none; width: 180px; font-size: 0.9rem; }
+        .search-form button { background: none; border: none; color: #e50914; cursor: pointer; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+        .actor-header { display: flex; gap: 40px; margin-bottom: 50px; background: linear-gradient(135deg,#1a1a2e,#16213e); border-radius: 16px; padding: 30px; border: 1px solid #222; }
+        .actor-photo { flex-shrink: 0; width: 200px; }
+        .actor-photo img { width: 100%; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.5); }
+        .actor-photo-placeholder { width: 200px; height: 300px; background: #222; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+        .actor-info { flex: 1; }
+        .actor-name { font-size: 2.2rem; font-weight: 800; margin-bottom: 8px; }
+        .actor-dept { color: #e50914; font-size: 1rem; margin-bottom: 16px; font-weight: 600; }
+        .ai-bio { background: rgba(102,126,234,0.1); border-left: 4px solid #667eea; border-radius: 0 8px 8px 0; padding: 16px 20px; margin-bottom: 20px; }
+        .ai-badge { background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; display: inline-block; margin-bottom: 10px; }
+        .ai-bio-text { color: #ddd; line-height: 1.7; font-size: 0.95rem; }
+        .actor-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; }
+        .meta-item { background: rgba(255,255,255,0.05); padding: 10px 16px; border-radius: 8px; border: 1px solid #333; }
+        .meta-label { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .meta-value { font-size: 0.95rem; font-weight: 600; margin-top: 4px; }
+        .actor-bio { color: #ccc; line-height: 1.7; font-size: 0.95rem; }
+        .section { margin-bottom: 50px; }
+        .section-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 20px; padding-left: 14px; border-left: 4px solid #e50914; }
+        .movies-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+        .movie-card { background: #1a1a2e; border-radius: 10px; overflow: hidden; transition: transform 0.3s; text-decoration: none; color: inherit; display: block; }
+        .movie-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(229,9,20,0.2); }
+        .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+        .no-poster { width: 100%; aspect-ratio: 2/3; background: #222; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
+        .movie-card-body { padding: 10px; }
+        .movie-card-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .movie-card-rating { font-size: 0.8rem; color: #f5c518; }
+        .movie-card-char { font-size: 0.75rem; color: #888; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .photos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+        .photo-card img { width: 100%; border-radius: 8px; aspect-ratio: 2/3; object-fit: cover; }
+        footer { background: #111; border-top: 1px solid #222; padding: 30px 40px; margin-top: 40px; text-align: center; color: #555; font-size: 0.85rem; }
+        footer a { color: #e50914; text-decoration: none; }
+        @media (max-width: 768px) { .actor-header { flex-direction: column; } .container { padding: 20px; } .navbar { padding: 0 16px; } .nav-links { display: none; } }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <a href="/" class="logo">🎬 MovieProfix</a>
+    <div class="nav-links">
+        <a href="/">Home</a><a href="/popular">Popular</a><a href="/top-rated">Top Rated</a><a href="/watchlist">Watchlist</a>
+    </div>
+    <form class="search-form" action="/search" method="get">
+        <input type="text" name="q" placeholder="Search movies...">
+        <button type="submit">🔍</button>
+    </form>
+</nav>
+<div class="container">
+    <div class="actor-header">
+        <div class="actor-photo">
+            {% if person.profile_path %}<img src="https://image.tmdb.org/t/p/w500{{ person.profile_path }}" alt="{{ person.name }}">
+            {% else %}<div class="actor-photo-placeholder">👤</div>{% endif %}
+        </div>
+        <div class="actor-info">
+            <h1 class="actor-name">{{ person.name }}</h1>
+            <div class="actor-dept">{{ person.known_for_department or 'Acting' }}</div>
+            {% if ai_bio %}
+            <div class="ai-bio"><span class="ai-badge">🤖 AI Bio</span><p class="ai-bio-text">{{ ai_bio }}</p></div>
+            {% endif %}
+            <div class="actor-meta">
+                {% if person.birthday %}<div class="meta-item"><div class="meta-label">Born</div><div class="meta-value">{{ person.birthday }}</div></div>{% endif %}
+                {% if person.place_of_birth %}<div class="meta-item"><div class="meta-label">From</div><div class="meta-value">{{ person.place_of_birth }}</div></div>{% endif %}
+                {% if person.popularity %}<div class="meta-item"><div class="meta-label">Popularity</div><div class="meta-value">{{ person.popularity|round(1) }}</div></div>{% endif %}
+            </div>
+            {% if person.biography %}<p class="actor-bio">{{ person.biography[:600] }}{% if person.biography|length > 600 %}...{% endif %}</p>{% endif %}
+        </div>
+    </div>
+    {% if movies %}
+    <div class="section">
+        <h2 class="section-title">🎬 Known For</h2>
+        <div class="movies-grid">
+            {% for movie in movies %}
+            <a href="/movie/{{ movie.id }}" class="movie-card">
+                {% if movie.poster_path %}<img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" alt="{{ movie.title }}" loading="lazy">
+                {% else %}<div class="no-poster">🎬</div>{% endif %}
+                <div class="movie-card-body">
+                    <div class="movie-card-title">{{ movie.title }}</div>
+                    <div class="movie-card-rating">⭐ {{ movie.vote_average|round(1) if movie.vote_average else 'N/A' }}</div>
+                    {% if movie.character %}<div class="movie-card-char">as {{ movie.character }}</div>{% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% if directed %}
+    <div class="section">
+        <h2 class="section-title">🎥 Directed</h2>
+        <div class="movies-grid">
+            {% for movie in directed %}
+            <a href="/movie/{{ movie.id }}" class="movie-card">
+                {% if movie.poster_path %}<img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" alt="{{ movie.title }}" loading="lazy">
+                {% else %}<div class="no-poster">🎬</div>{% endif %}
+                <div class="movie-card-body">
+                    <div class="movie-card-title">{{ movie.title }}</div>
+                    <div class="movie-card-rating">⭐ {{ movie.vote_average|round(1) if movie.vote_average else 'N/A' }}</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% if images %}
+    <div class="section">
+        <h2 class="section-title">📸 Photos</h2>
+        <div class="photos-grid">
+            {% for img in images %}<div class="photo-card"><img src="https://image.tmdb.org/t/p/w500{{ img.file_path }}" alt="{{ person.name }}" loading="lazy"></div>{% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+<footer><p>© {{ current_year }} MovieProfix. Data from <a href="https://www.themoviedb.org/">TMDB</a>.</p></footer>
+</body>
+</html>
